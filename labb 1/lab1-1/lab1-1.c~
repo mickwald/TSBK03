@@ -66,7 +66,7 @@ Model* squareModel;
 Point3D cam, point;
 Model *model1;
 FBOstruct *fbo1, *fbo2;
-GLuint phongshader = 0, plaintextureshader = 0, lpfiltershader = 0;
+GLuint phongshader = 0, plaintextureshader = 0, lpfiltershader = 0, trunkshader = 0;
 
 //-------------------------------------------------------------------------------------
 
@@ -85,6 +85,7 @@ void init(void)
 	plaintextureshader = loadShaders("plaintextureshader.vert", "plaintextureshader.frag");  // puts texture on teapot
 	phongshader = loadShaders("phong.vert", "phong.frag");  // renders with light (used for initial renderin of teapot)
 	lpfiltershader = loadShaders("lpfilter.vert", "lpfilter.frag");
+	trunkshader = loadShaders("trunk.vert", "trunk.frag");
 
 	printError("init shader");
 
@@ -135,6 +136,20 @@ void runfilter(GLuint shader, FBOstruct *out, FBOstruct *in1, FBOstruct *in2, in
 	}
 }
 
+void runtrunking(FBOstruct *out, FBOstruct *in1, FBOstruct *in2)
+{
+	glUseProgram(trunkshader);								    		// Many of these things would be more efficiently done once and for all
+	glDisable(GL_CULL_FACE);
+	glDisable(GL_DEPTH_TEST);
+	glUniform1i(glGetUniformLocation(trunkshader, "texUnit"), 0);
+	glUniform1i(glGetUniformLocation(trunkshader, "texUnit2"), 1);
+
+    	useFBO(out, in1, in2);
+
+    	DrawModel(squareModel, trunkshader, "in_Position", NULL, NULL); //"in_TexCoord"
+    	glFlush();
+}
+
 //-------------------------------callback functions------------------------------------------
 void display(void)
 {
@@ -175,7 +190,9 @@ void display(void)
 	// Done rendering the FBO! Set up for rendering on screen, using the result as texture!
 	
 	//useFBO(fbo2,0L,0L);
-	runfilter(lpfiltershader, fbo2, fbo1, 0L, 1000);
+	runtrunking(fbo2, fbo1, 0L);
+	runfilter(lpfiltershader, fbo1, fbo2, 0L, 100);
+	
 
 
 //	glFlush(); // Can cause flickering on some systems. Can also be necessary to make drawing complete.
