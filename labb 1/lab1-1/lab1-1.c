@@ -65,8 +65,8 @@ Model* squareModel;
 //----------------------Globals-------------------------------------------------
 Point3D cam, point;
 Model *model1;
-FBOstruct *fbo1, *fbo2;
-GLuint phongshader = 0, plaintextureshader = 0, lpfiltershader = 0, trunkshader = 0;
+FBOstruct *fbo1, *fbo2, *fbo3;
+GLuint phongshader = 0, plaintextureshader = 0, lpfiltershader = 0, trunkshader = 0, joinshader = 0;
 
 //-------------------------------------------------------------------------------------
 
@@ -86,11 +86,13 @@ void init(void)
 	phongshader = loadShaders("phong.vert", "phong.frag");  // renders with light (used for initial renderin of teapot)
 	lpfiltershader = loadShaders("lpfilter.vert", "lpfilter.frag");
 	trunkshader = loadShaders("trunk.vert", "trunk.frag");
+	joinshader = loadShaders("join.vert", "join.frag");
 
 	printError("init shader");
 
 	fbo1 = initFBO(W, H, 0);
 	fbo2 = initFBO(W, H, 0);
+	fbo3 = initFBO(W, H, 0);
 
 	// load the model
 //	model1 = LoadModelPlus("teapot.obj");
@@ -150,6 +152,20 @@ void runtrunking(FBOstruct *out, FBOstruct *in1, FBOstruct *in2)
     	glFlush();
 }
 
+void runjoiner(FBOstruct *out, FBOstruct *in1, FBOstruct *in2){
+	
+	glUseProgram(joinshader);								    		// Many of these things would be more efficiently done once and for all
+	glDisable(GL_CULL_FACE);
+	glDisable(GL_DEPTH_TEST);
+	glUniform1i(glGetUniformLocation(joinshader, "texUnit"), 0);
+	glUniform1i(glGetUniformLocation(joinshader, "texUnit2"), 1);
+
+    	useFBO(out, in1, in2);
+
+    	DrawModel(squareModel, joinshader, "in_Position", NULL, NULL); //"in_TexCoord"
+    	glFlush();
+}
+
 //-------------------------------callback functions------------------------------------------
 void display(void)
 {
@@ -191,7 +207,8 @@ void display(void)
 	
 	//useFBO(fbo2,0L,0L);
 	runtrunking(fbo2, fbo1, 0L);
-	runfilter(lpfiltershader, fbo1, fbo2, 0L, 100);
+	runfilter(lpfiltershader, fbo3, fbo2, 0L, 100);
+	runjoiner(fbo2,fbo1,fbo3);
 	
 
 
