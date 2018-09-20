@@ -218,11 +218,13 @@ void DeformCylinder()
 			//
 			// row traverserar i cylinderns längdriktning,
 			// corner traverserar "runt" cylindern
-			mat4 mBen0 = Mult(T(g_bones[0].pos.x,g_bones[0].pos.y,g_bones[0].pos.z), g_bones[0].rot);
-			mat4 mBen1 = Mult(T(g_bones[1].pos.x,g_bones[1].pos.y,g_bones[1].pos.z), g_bones[1].rot);
+			
 
-			g_vertsRes[row][corner] = VectorAdd(ScalarMult(MultVec3(Mult(mBen0,invmBen0),g_vertsOrg[row][corner]),1.0-weight[row]),
-							ScalarMult(MultVec3(Mult(mBen1,invmBen1),g_vertsOrg[row][corner]),weight[row]));
+			//mat4 mBen0 = Mult(T(g_bones[0].pos.x,g_bones[0].pos.y,g_bones[0].pos.z), g_bones[0].rot);
+			//mat4 mBen1 = Mult(T(g_bones[1].pos.x,g_bones[1].pos.y,g_bones[1].pos.z), g_bones[1].rot);
+
+			//g_vertsRes[row][corner] = VectorAdd(ScalarMult(MultVec3(Mult(mBen0,invmBen0),g_vertsOrg[row][corner]),1.0-weight[row]),
+			//				ScalarMult(MultVec3(Mult(mBen1,invmBen1),g_vertsOrg[row][corner]),weight[row]));
 			
 			// ---=========	Uppgift 2: Soft skinning i CPU ===========------
 			// Deformera cylindern enligt det skelett som finns
@@ -234,6 +236,8 @@ void DeformCylinder()
 			// g_boneWeights innehåller blendvikter för benen.
 			// g_vertsOrg innehåller ursprunglig vertexdata.
 			// g_vertsRes innehåller den vertexdata som skickas till OpenGL.
+
+			
 			
 		}
 	}
@@ -264,6 +268,8 @@ void setBoneRotation(void)
 {
 	// Uppgift 3 TODO: Här behöver du skicka över benens rotation
 	// till vertexshadern
+	glUniformMatrix4fv(glGetUniformLocation(g_shader, "boneRot0"), 1, GL_TRUE, g_bones[0].rot.m);
+	glUniformMatrix4fv(glGetUniformLocation(g_shader, "boneRot1"), 1, GL_TRUE, g_bones[1].rot.m);
 }
 
 
@@ -274,6 +280,11 @@ void setBoneLocation(void)
 {
 	// Uppgift 3 TODO: Här behöver du skicka över benens position
 	// till vertexshadern
+	mat4 bonePosMat[2];
+	bonePosMat[0] = T(g_bones[0].pos.x,g_bones[0].pos.y,g_bones[0].pos.z);
+	bonePosMat[1] = T(g_bones[1].pos.x,g_bones[1].pos.y,g_bones[1].pos.z);
+	glUniformMatrix4fv(glGetUniformLocation(g_shader, "bonePos0"), 1, GL_TRUE, bonePosMat[0].m);
+	glUniformMatrix4fv(glGetUniformLocation(g_shader, "bonePos1"), 1, GL_TRUE, bonePosMat[1].m);
 }
 
 
