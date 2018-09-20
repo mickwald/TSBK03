@@ -66,8 +66,8 @@ Point3D g_normalsRes[kMaxRow][kMaxCorners];
 // vertex attributes sent to OpenGL
 Point3D g_boneWeights[kMaxRow][kMaxCorners];
 
-//float weight[kMaxRow] = {0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0};
-float weight[kMaxRow] = {0.10, 0.25, 0.4, 0.5, 0.6, 0.65, 0.70, 0.75, 0.85, 1.0};
+float weight[kMaxRow] = {0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0};
+//float weight[kMaxRow] = {0.10, 0.25, 0.4, 0.5, 0.6, 0.65, 0.70, 0.75, 0.85, 1.0};
 
 Model *cylinderModel; // Collects all the above for drawing with glDrawElements
 
@@ -220,11 +220,11 @@ void DeformCylinder()
 			// corner traverserar "runt" cylindern
 			
 
-			//mat4 mBen0 = Mult(T(g_bones[0].pos.x,g_bones[0].pos.y,g_bones[0].pos.z), g_bones[0].rot);
-			//mat4 mBen1 = Mult(T(g_bones[1].pos.x,g_bones[1].pos.y,g_bones[1].pos.z), g_bones[1].rot);
+			mat4 mBen0 = Mult(T(g_bones[0].pos.x,g_bones[0].pos.y,g_bones[0].pos.z), g_bones[0].rot);
+			mat4 mBen1 = Mult(T(g_bones[1].pos.x,g_bones[1].pos.y,g_bones[1].pos.z), g_bones[1].rot);
 
-			//g_vertsRes[row][corner] = VectorAdd(ScalarMult(MultVec3(Mult(mBen0,invmBen0),g_vertsOrg[row][corner]),1.0-weight[row]),
-			//				ScalarMult(MultVec3(Mult(mBen1,invmBen1),g_vertsOrg[row][corner]),weight[row]));
+			g_vertsRes[row][corner] = VectorAdd(ScalarMult(MultVec3(Mult(mBen0,invmBen0),g_vertsOrg[row][corner]),1.0-weight[row]),
+							ScalarMult(MultVec3(Mult(mBen1,invmBen1),g_vertsOrg[row][corner]),weight[row]));
 			
 			// ---=========	Uppgift 2: Soft skinning i CPU ===========------
 			// Deformera cylindern enligt det skelett som finns
@@ -268,7 +268,8 @@ void setBoneRotation(void)
 {
 	// Uppgift 3 TODO: Här behöver du skicka över benens rotation
 	// till vertexshadern
-	glUniformMatrix4fv(glGetUniformLocation(g_shader, "boneRot"), sizeof(g_bones)/sizeof(g_bones[0]), GL_TRUE, g_bones[0].rot.m);
+	glUniformMatrix4fv(glGetUniformLocation(g_shader, "boneRot0"), 1, GL_TRUE, g_bones[0].rot.m);
+	glUniformMatrix4fv(glGetUniformLocation(g_shader, "boneRot1"), 1, GL_TRUE, g_bones[1].rot.m);
 }
 
 
@@ -282,7 +283,8 @@ void setBoneLocation(void)
 	mat4 bonePosMat[2];
 	bonePosMat[0] = T(g_bones[0].pos.x,g_bones[0].pos.y,g_bones[0].pos.z);
 	bonePosMat[1] = T(g_bones[1].pos.x,g_bones[1].pos.y,g_bones[1].pos.z);
-	glUniformMatrix4fv(glGetUniformLocation(g_shader, "bonePos"), sizeof(g_bones)/sizeof(g_bones[0]), GL_TRUE, bonePosMat[0].m);
+	glUniformMatrix4fv(glGetUniformLocation(g_shader, "bonePos0"), 1, GL_TRUE, bonePosMat[0].m);
+	glUniformMatrix4fv(glGetUniformLocation(g_shader, "bonePos1"), 1, GL_TRUE, bonePosMat[1].m);
 }
 
 

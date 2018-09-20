@@ -21,10 +21,10 @@ const vec3 lightDir = normalize(vec3(0.3, 0.5, 1.0));
 
 void main(void)
 {
-	mat4 invmBone0 = inverse(bonePos[0]);
-	mat4 invmBone1 = inverse(bonePos[1]);
-	mat4 boneMat0 = bonePos[0] * boneRot[0];
-	mat4 boneMat1 = bonePos[1] * boneRot[1];
+	mat4 invmBone0 = inverse(bonePos0);
+	mat4 invmBone1 = inverse(bonePos1);
+	mat4 boneMat0 = bonePos0 * boneRot0;
+	mat4 boneMat1 = bonePos1 * boneRot1;
 	vec3 position = vec3(((boneMat0 * invmBone0) * vec4(in_Position, 1.0)) * in_TexCoord.x + ((boneMat1 * invmBone1) * vec4(in_Position, 1.0)) * in_TexCoord.y); 
 	
 	// transformera resultatet med ModelView- och Projection-matriserna

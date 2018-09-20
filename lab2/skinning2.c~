@@ -248,23 +248,65 @@ void DeformCylinder()
   //vec3 v[kMaxBones];
 
   //float w[kMaxBones];
-  int row, corner;
+  int row, corner, i, j;
+	mat4 invBonesPos[kMaxBones];
+	mat4 bonesMat[kMaxBones];
+	mat4 bonesComplete[kMaxBones];
+	Point3D res = SetVector(0.0,0.0,0.0);
+	
+	for(j = 0; j < kMaxBones; j++){
+		bonesComplete[j] = IdentityMatrix();
+	}
+
+	invBonesPos[0] = InvertMat4(T(g_bones[0].pos.x,g_bones[0].pos.y,g_bones[0].pos.z));
+	bonesMat[0] = Mult(T(g_bones[0].pos.x,g_bones[0].pos.y,g_bones[0].pos.z),g_bonesRes[0].rot);
+	bonesComplete[0] = Mult(bonesMat[0], invBonesPos[0]);
+
+	//for each bone
+	
+	for(i = 1; i < kMaxBones; i++)
+	{
+		invBonesPos[i] = InvertMat4(T(g_bones[i].pos.x - g_bones[i-1].pos.x,
+		g_bones[i].pos.y - g_bones[i-1].pos.y,
+		g_bones[i].pos.z - g_bones[i-1].pos.z));
+
+		bonesMat[i] = Mult(T(g_bones[i].pos.x - g_bones[i-1].pos.x,
+		g_bones[i].pos.y - g_bones[i-1].pos.y,
+		g_bones[i].pos.z - g_bones[i-1].pos.z),g_bonesRes[i].rot);
+
+		for(j = i; j>=0; j--){
+			bonesComplete[i] = Mult(bonesMat[j],Mult(bonesComplete[i],invBonesPos[j]));
+		}
+		
+	} 
 
   // för samtliga vertexar 
   for (row = 0; row < kMaxRow; row++)
   {
+    
     for (corner = 0; corner < kMaxCorners; corner++)
     {
-      // ---------=========  UPG 4 ===========---------
-      // TODO: skinna meshen mot alla benen.
-      //
-      // data som du kan använda:
-      // g_bonesRes[].rot
-      // g_bones[].pos
-      // g_boneWeights
-      // g_vertsOrg
-      // g_vertsRes
-      
+	// ---------=========  UPG 4 ===========---------
+	// TODO: skinna meshen mot alla benen.
+	//
+	// data som du kan använda:
+	// g_bonesRes[].rot
+	// g_bones[].pos
+	// g_boneWeights
+	// g_vertsOrg
+	// g_vertsRes
+	
+	for(i = 0; i < kMaxBones; i++){
+		res = VectorAdd(res,ScalarMult(
+				MultVec3(
+					bonesComplete[i],
+				g_vertsOrg[row][corner]),
+			g_boneWeights[row][corner][i])); 
+		
+	}
+	g_vertsRes[row][corner] = res;
+	res = SetVector(0.0,0.0,0.0);
+	
     }
   }
 }
@@ -279,7 +321,11 @@ void animateBones(void)
 	int bone;
 	// Hur mycket kring varje led? €ndra gŠrna.
 	float angleScales[10] = { 1.f, 1.f, 1.f, 1.f, 1.f, 1.f, 1.f, 1.f, 1.f, 1.f };
-
+	//float angleScales[10] = { -1.f, 1.f, -1.f, 1.f, -1.f, 1.f, -1.f, 1.f, -1.f, 1.f };
+	//float angleScales[10] = { 0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f, 0.7f, 0.8f, 0.9f, 1.0f };
+	//float angleScales[10] = { 0.1f, 0.2f, 0.3f, 0.4f, 1.5f, 0.6f, 0.7f, 0.8f, 0.9f, 1.0f };
+	//float angleScales[10] = { 100.f, 10.f, 0.f, 5.f, 0.f, 10.f, 0.f, 5.f, 0.f, 10.0f };
+	
 	float time = glutGet(GLUT_ELAPSED_TIME) / 1000.0;
 	// Hur mycket skall vi vrida?
 	float angle = sin(time * 3.f) / 2.0f;
@@ -418,6 +464,5 @@ int main(int argc, char **argv)
   g_shader = loadShaders("shader.vert" , "shader.frag");
 
   glutMainLoop();
-
- return 0;
+  exit(0);
 }
