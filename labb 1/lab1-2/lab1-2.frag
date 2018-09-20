@@ -16,7 +16,7 @@ void main(void)
 	vec4 bs = -(texture(texUnit,outTexCoord) - texture(texUnit,vec2(outTexCoord.s+(1.0/256.0), outTexCoord.t)));
 	vec4 bt = -(texture(texUnit,outTexCoord) - texture(texUnit,vec2(outTexCoord.s, outTexCoord.t+(1.0/256.0))));
 
-	mat3 Mvt = mat3(Ps,Pt,out_Normal);	
+	mat3 Mvt = transpose(mat3(Ps,Pt,out_Normal));	
 
 	vec3 light = vec3(0.0, 0.7, 0.7); // Light source in view coordinates
 
