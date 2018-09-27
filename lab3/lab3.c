@@ -188,17 +188,11 @@ void updateWorld()
         {
 		vec3 up = SetVector(0.0f,kBallSize,0.0f);
             	vec3 d = VectorSub(ball[j].X, ball[i].X);
-		vec3 rA = VectorSub(ScalarMult(d,0.5f), ball[i].X);
-		vec3 rB = VectorSub(ScalarMult(d,0.5f), ball[j].X);
-		printf("rA: %f %f %f \n", rA.x,rA.y,rA.z);
-		printf("rB: %f %f %f \n", rB.x,rB.y,rB.z);
+		vec3 rA = VectorSub(ball[i].X, ScalarMult(d,0.5f));
+		vec3 rB = VectorSub(ball[j].X, ScalarMult(d,0.5f));
 		float dLen = Norm(d);
-		if(i == 2){			
-			//printf("%f\n", dLen);
-		}
-		if(abs(dLen) <= kBallSize*2.0f){
-			printf("Collision\n");
-			vec3 vRel = VectorSub(ball[j].v, ball[i].v);
+		vec3 vRel = VectorSub(ball[j].v, ball[i].v);
+		if(abs(dLen) <= kBallSize*2.0f && vRel < 0){
 			float vRelFloatA = DotProduct(vRel, Normalize(rA));
 			float vRelFloatB = DotProduct(vRel, Normalize(rB));
 			float epsilon = 1.0f;
