@@ -191,7 +191,7 @@ void updateWorld()
 			vec3 rB = VectorSub(ball[j].X, ScalarMult(d,0.5f));
 			float dLen = Norm(d);
 			vec3 vRel = VectorSub(ball[j].v, ball[i].v);
-			if(abs(dLen) <= kBallSize*2.0f && vRel < 0){
+			if(abs(dLen) <= kBallSize*2.0f && Norm(vRel) < 0){
 				float vRelFloatA = DotProduct(vRel, Normalize(rA));
 				float vRelFloatB = DotProduct(vRel, Normalize(rB));
 				float epsilon = 1.0f;
