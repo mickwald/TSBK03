@@ -193,7 +193,10 @@ void updateWorld()
 	// friction against floor, simplified as well as more correct
 	for (i = 0; i < kNumBalls; i++)
 	{
-		// YOUR CODE HERE
+		vec3 up = SetVector(0.0f,kBallSize,0.0f);
+		vec3 rotAxis = CrossProduct(up,ball[i].P);
+		float speed = sqrt(pow(ball[i].P.x,2)+pow(ball[i].P.y,2)+pow(ball[i].P.z,2));
+		ball[i].R = ArbRotate(rotAxis, speed*currentTime*2*M_PI);
 	}
 
 // Update state, follows the book closely
