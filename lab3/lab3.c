@@ -211,7 +211,7 @@ void updateWorld()
 		vec3 up = SetVector(0.0f,kBallSize,0.0f);
 		vec3 rotAxis = CrossProduct(up,ball[i].P);
 		float speed = Norm(ball[i].P);
-		ball[i].R = ArbRotate(rotAxis, speed*currentTime*2*M_PI);
+		ball[i].R = Mult(ArbRotate(rotAxis, speed*deltaT*2*M_PI), ball[i].R);
 	}
 
 // Update state, follows the book closely

@@ -1,1 +1,6 @@
-"Fr†ga: Vad blir den f”renklade formeln \n Svar: Samma som i boken med I termen 0:ad" 
+Vad blir den förenklade formeln?
+Samma som i boken med I termen 0:ad
+
+Vilka av testfallen var svårast att uppfylla?
+De som lättare ledde till mindre relativa rörelser där kollision kunde upptäckas flera gånger för samma fall
+
