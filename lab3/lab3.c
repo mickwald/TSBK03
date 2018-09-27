@@ -79,7 +79,7 @@ typedef struct
 
 //  mat4 J, Ji; We could have these but we can live without them for spheres.
   vec3 omega; // Angular momentum
-  vec3 v; // Change in velocity
+  vec3 v; // Velocity
 
 } Ball;
 
@@ -103,7 +103,7 @@ Material ballMt = { { 1.0, 1.0, 1.0, 1.0 }, { 1.0, 1.0, 1.0, 0.0 },
                 };
 
 
-enum {kNumBalls = 16}; // Change as desired, max 16
+enum {kNumBalls = 4}; // Change as desired, max 16
 
 //------------------------------Globals---------------------------------
 ModelTexturePair tableAndLegs, tableSurf;
@@ -182,11 +182,33 @@ void updateWorld()
 			ball[i].P.z = -abs(ball[i].P.z);
 	}
 
-	// Detect collisions, calculate speed differences, apply forces
+	// Detect collisions, calculate speed differences, apply forces	
 	for (i = 0; i < kNumBalls; i++)
         for (j = i+1; j < kNumBalls; j++)
         {
-            // YOUR CODE HERE
+		vec3 up = SetVector(0.0f,kBallSize,0.0f);
+            	vec3 d = VectorSub(ball[j].X, ball[i].X);
+		vec3 rA = VectorSub(ScalarMult(d,0.5f), ball[i].X);
+		vec3 rB = VectorSub(ScalarMult(d,0.5f), ball[j].X);
+		printf("rA: %f %f %f \n", rA.x,rA.y,rA.z);
+		printf("rB: %f %f %f \n", rB.x,rB.y,rB.z);
+		float dLen = Norm(d);
+		if(i == 2){			
+			//printf("%f\n", dLen);
+		}
+		if(abs(dLen) <= kBallSize*2.0f){
+			printf("Collision\n");
+			vec3 vRel = VectorSub(ball[j].v, ball[i].v);
+			float vRelFloatA = DotProduct(vRel, Normalize(rA));
+			float vRelFloatB = DotProduct(vRel, Normalize(rB));
+			float epsilon = 1.0f;
+			float impJA = -(epsilon +1.0f)*vRelFloatA/
+				((1.0f/ball[i].mass) + (1.0f/ball[j].mass));
+			float impJB = -(epsilon +1.0f)*vRelFloatB/
+				((1.0f/ball[i].mass) + (1.0f/ball[j].mass));
+			ball[i].F = VectorAdd(ball[i].F, ScalarMult(ScalarMult(Normalize(rA),-impJA),1.0f/deltaT));
+			ball[j].F = VectorAdd(ball[j].F, ScalarMult(ScalarMult(Normalize(rB),impJB),1.0f/deltaT));
+		} 		
         }
 
 	// Control rotation here to reflect
@@ -195,7 +217,7 @@ void updateWorld()
 	{
 		vec3 up = SetVector(0.0f,kBallSize,0.0f);
 		vec3 rotAxis = CrossProduct(up,ball[i].P);
-		float speed = sqrt(pow(ball[i].P.x,2)+pow(ball[i].P.y,2)+pow(ball[i].P.z,2));
+		float speed = Norm(ball[i].P);
 		ball[i].R = ArbRotate(rotAxis, speed*currentTime*2*M_PI);
 	}
 
@@ -319,6 +341,8 @@ void init()
 	ball[1].P = SetVector(0, 0, 0);
 	ball[2].P = SetVector(0, 0, 0);
 	ball[3].P = SetVector(0, 0, 1.00);
+
+	//ball[0].mass = 100.0;
 
     cam = SetVector(0, 2, 2);
     point = SetVector(0, 0, 0);
