@@ -186,23 +186,22 @@ void updateWorld()
 	for (i = 0; i < kNumBalls; i++)
         for (j = i+1; j < kNumBalls; j++)
         {
-		vec3 up = SetVector(0.0f,kBallSize,0.0f);
-            	vec3 d = VectorSub(ball[j].X, ball[i].X);
-		vec3 rA = VectorSub(ball[i].X, ScalarMult(d,0.5f));
-		vec3 rB = VectorSub(ball[j].X, ScalarMult(d,0.5f));
-		float dLen = Norm(d);
-		vec3 vRel = VectorSub(ball[j].v, ball[i].v);
-		if(abs(dLen) <= kBallSize*2.0f && vRel < 0){
-			float vRelFloatA = DotProduct(vRel, Normalize(rA));
-			float vRelFloatB = DotProduct(vRel, Normalize(rB));
-			float epsilon = 1.0f;
-			float impJA = -(epsilon +1.0f)*vRelFloatA/
-				((1.0f/ball[i].mass) + (1.0f/ball[j].mass));
-			float impJB = -(epsilon +1.0f)*vRelFloatB/
-				((1.0f/ball[i].mass) + (1.0f/ball[j].mass));
-			ball[i].F = VectorAdd(ball[i].F, ScalarMult(ScalarMult(Normalize(rA),-impJA),1.0f/deltaT));
-			ball[j].F = VectorAdd(ball[j].F, ScalarMult(ScalarMult(Normalize(rB),impJB),1.0f/deltaT));
-		} 		
+			vec3 d = VectorSub(ball[j].X, ball[i].X);
+			vec3 rA = VectorSub(ball[i].X, ScalarMult(d,0.5f));
+			vec3 rB = VectorSub(ball[j].X, ScalarMult(d,0.5f));
+			float dLen = Norm(d);
+			vec3 vRel = VectorSub(ball[j].v, ball[i].v);
+			if(abs(dLen) <= kBallSize*2.0f && vRel < 0){
+				float vRelFloatA = DotProduct(vRel, Normalize(rA));
+				float vRelFloatB = DotProduct(vRel, Normalize(rB));
+				float epsilon = 1.0f;
+				float impJA = -(epsilon +1.0f)*vRelFloatA/
+					((1.0f/ball[i].mass) + (1.0f/ball[j].mass));
+				float impJB = -(epsilon +1.0f)*vRelFloatB/
+					((1.0f/ball[i].mass) + (1.0f/ball[j].mass));
+				ball[i].F = VectorAdd(ball[i].F, ScalarMult(ScalarMult(Normalize(rA),-impJA),1.0f/deltaT));
+				ball[j].F = VectorAdd(ball[j].F, ScalarMult(ScalarMult(Normalize(rB),impJB),1.0f/deltaT));
+			} 		
         }
 
 	// Control rotation here to reflect
