@@ -103,7 +103,7 @@ Material ballMt = { { 1.0, 1.0, 1.0, 1.0 }, { 1.0, 1.0, 1.0, 0.0 },
                 };
 
 
-enum {kNumBalls = 4}; // Change as desired, max 16
+enum {kNumBalls = 16}; // Change as desired, max 16
 
 //------------------------------Globals---------------------------------
 ModelTexturePair tableAndLegs, tableSurf;
@@ -187,14 +187,14 @@ void updateWorld()
         for (j = i+1; j < kNumBalls; j++)
         {
 			vec3 d = VectorSub(ball[j].X, ball[i].X);
-			vec3 rA = VectorSub(ball[i].X, ScalarMult(d,0.5f));
-			vec3 rB = VectorSub(ball[j].X, ScalarMult(d,0.5f));
+			vec3 rA = VectorSub(ScalarMult(d,0.5f),ball[i].X);
+			vec3 rB = VectorSub(ScalarMult(d,0.5f),ball[j].X);
 			float dLen = Norm(d);
 			vec3 vRel = VectorSub(ball[j].v, ball[i].v);
-			if(abs(dLen) <= kBallSize*2.0f && Norm(vRel) < 0){
+			if(abs(dLen) <= kBallSize*2.0f){
 				float vRelFloatA = DotProduct(vRel, Normalize(rA));
 				float vRelFloatB = DotProduct(vRel, Normalize(rB));
-				float epsilon = 1.0f;
+				float epsilon = .5f;
 				float impJA = -(epsilon +1.0f)*vRelFloatA/
 					((1.0f/ball[i].mass) + (1.0f/ball[j].mass));
 				float impJB = -(epsilon +1.0f)*vRelFloatB/
