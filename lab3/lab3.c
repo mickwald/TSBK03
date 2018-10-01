@@ -116,6 +116,7 @@ vec3 cam, point;
 
 GLuint shader = 0;
 GLint lastw = W, lasth = H;  // for resizing
+int lol = 0;
 //-----------------------------matrices------------------------------
 mat4 projectionMatrix,
         viewMatrix, rotateMatrix, scaleMatrix, transMatrix, tmpMatrix;
@@ -190,17 +191,28 @@ void updateWorld()
             	vec3 d = VectorSub(ball[j].X, ball[i].X);
 		vec3 rA = VectorSub(ScalarMult(d,0.5f), ball[i].X);
 		vec3 rB = VectorSub(ScalarMult(d,0.5f), ball[j].X);
-		printf("rA: %f %f %f \n", rA.x,rA.y,rA.z);
-		printf("rB: %f %f %f \n", rB.x,rB.y,rB.z);
 		float dLen = Norm(d);
 		if(i == 2){			
 			//printf("%f\n", dLen);
 		}
-		if(abs(dLen) <= kBallSize*2.0f){
+		//vec3 testA = ScalarMult(ball[i].v,1.0f/Norm(ball[i].v));
+		//vec3 testB = ScalarMult(ball[j].v,1.0f/Norm(ball[j].v));
+		printf("testA: %f \n", ball[i].v.z);
+		printf("testB: %f \n", ball[j].v.z);
+		float sum = 0.0f;
+		sum += testA.z;
+		sum += testB.z;
+		//printf("sum: %f \n", sum);
+		if(abs(dLen) <= kBallSize*2.0f && abs(sum)<=1.5f){
 			printf("Collision\n");
+			printf("sum: %f \n", sum);
+			printf("testB: %f \n", testB.z);
 			vec3 vRel = VectorSub(ball[j].v, ball[i].v);
+			//printf("ball[i].v: %f %f %f \n", ball[i].v.x,ball[i].v.y,ball[i].v.z);
+			//printf("ball[j].v: %f %f %f \n", ball[j].v.x,ball[j].v.y,ball[j].v.z);
 			float vRelFloatA = DotProduct(vRel, Normalize(rA));
 			float vRelFloatB = DotProduct(vRel, Normalize(rB));
+			//printf("vRel: %f %f %f \n", vRel.x,vRel.y,vRel.z);
 			float epsilon = 1.0f;
 			float impJA = -(epsilon +1.0f)*vRelFloatA/
 				((1.0f/ball[i].mass) + (1.0f/ball[j].mass));
