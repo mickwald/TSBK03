@@ -103,7 +103,7 @@ Material ballMt = { { 1.0, 1.0, 1.0, 1.0 }, { 1.0, 1.0, 1.0, 0.0 },
                 };
 
 
-enum {kNumBalls = 16}; // Change as desired, max 16
+enum {kNumBalls = 4}; // Change as desired, max 16
 
 //------------------------------Globals---------------------------------
 ModelTexturePair tableAndLegs, tableSurf;
@@ -191,16 +191,16 @@ void updateWorld()
 			vec3 rB = VectorSub(ScalarMult(d,0.5f),ball[j].X);
 			float dLen = Norm(d);
 			vec3 vRel = VectorSub(ball[j].v, ball[i].v);
-			if(abs(dLen) <= kBallSize*2.0f){
+			vec3 dNorm = ScalarMult(d,1.0f/Norm(d));
+			vec3 vRelonD = ScalarMult(dNorm,DotProduct(vRel, dNorm));
+			vec3 posplusv = VectorSub(d, ScalarMult(vRelonD,dLen));
+			if(abs(dLen) <= kBallSize*2.0f && abs(posplusv.x) < .5f && abs(posplusv.y) < .5f && abs(posplusv.z) < .5f){
 				float vRelFloatA = DotProduct(vRel, Normalize(rA));
-				float vRelFloatB = DotProduct(vRel, Normalize(rB));
 				float epsilon = .5f;
 				float impJA = -(epsilon +1.0f)*vRelFloatA/
 					((1.0f/ball[i].mass) + (1.0f/ball[j].mass));
-				float impJB = -(epsilon +1.0f)*vRelFloatB/
-					((1.0f/ball[i].mass) + (1.0f/ball[j].mass));
 				ball[i].F = VectorAdd(ball[i].F, ScalarMult(ScalarMult(Normalize(rA),-impJA),1.0f/deltaT));
-				ball[j].F = VectorAdd(ball[j].F, ScalarMult(ScalarMult(Normalize(rB),impJB),1.0f/deltaT));
+				ball[j].F = VectorAdd(ball[j].F, ScalarMult(ScalarMult(Normalize(rB),impJA),1.0f/deltaT));
 			} 		
         }
 
