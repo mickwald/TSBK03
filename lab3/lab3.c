@@ -212,9 +212,18 @@ void updateWorld()
 	for (i = 0; i < kNumBalls; i++)
 	{
 		vec3 up = SetVector(0.0f,kBallSize,0.0f);
-		vec3 rotAxis = CrossProduct(up,ball[i].P);
+		GLfloat my = .1f;
+		/*vec3 rotAxis = CrossProduct(up,ball[i].P);
 		float speed = Norm(ball[i].P);
 		ball[i].R = Mult(ArbRotate(rotAxis, speed*deltaT*2*M_PI), ball[i].R);
+		*/
+		vec3 vRelRot = VectorSub(ball[i].v, ScalarMult(ball[i].omega, kBallSize));
+		if(Norm(vRelRot) >= .1f){
+			ball[i].T = CrossProduct(ScalarMult(up, -1.f), ScalarMult(vRelRot,my*ball[i].mass));
+		}
+		
+		vec3 rotAxis = CrossProduct(up, ball[i].omega);
+		ball[i].R = Mult(ArbRotate(rotAxis, Norm(ball[i].omega)*deltaT), ball[i].R);
 	}
 
 // Update state, follows the book closely
@@ -222,9 +231,23 @@ void updateWorld()
 	{
 		vec3 dX, dP, dL, dO;
 		mat4 Rd;
+		mat3 I, invI;
 
 		// Note: omega is not set. How do you calculate it?
 		// YOUR CODE HERE
+		I.m[0] = ball[i].mass*(4.0f/3.0f);	//xx
+		I.m[1] = 0;	//xy
+		I.m[2] = 0;	//xz
+		I.m[3] = 0;	//yx
+		I.m[4] = ball[i].mass*(4.0f/3.0f);	//yy
+		I.m[5] = 0;	//yz
+		I.m[6] = 0;	//zx
+		I.m[7] = 0;	//zy
+		I.m[8] = ball[i].mass*(4.0f/3.0f);	//zz
+
+		invI = InvertMat3(I);
+		ball[i].omega = MultMat3Vec3(invI, ball[i].L);
+
 
 //		v := P * 1/mass
 		ball[i].v = ScalarMult(ball[i].P, 1.0/(ball[i].mass));
