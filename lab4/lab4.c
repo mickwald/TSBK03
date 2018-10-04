@@ -12,37 +12,79 @@
 	#include "MicroGlut.h"
 #endif
 
+#include <math.h>
 #include <stdlib.h>
 #include "LoadTGA.h"
 #include "SpriteLight.h"
 #include "GL_utilities.h"
 
-// LŠgg till egna globaler hŠr efter behov.
+// Lï¿½gg till egna globaler hï¿½r efter behov.
 
+#define kMaxDistance 50.0f
 
 void SpriteBehavior() // Din kod!
 {
-// LŠgg till din labbkod hŠr. Det gŒr bra att Šndra var som helst i
-// koden i švrigt, men mycket kan samlas hŠr. Du kan utgŒ frŒn den
-// globala listroten, gSpriteRoot, fšr att kontrollera alla sprites
-// hastigheter och positioner, eller arbeta frŒn egna globaler.
+// Lï¿½gg till din labbkod hï¿½r. Det gï¿½r bra att ï¿½ndra var som helst i
+// koden i ï¿½vrigt, men mycket kan samlas hï¿½r. Du kan utgï¿½ frï¿½n den
+// globala listroten, gSpriteRoot, fï¿½r att kontrollera alla sprites
+// hastigheter och positioner, eller arbeta frï¿½n egna globaler.
+	SpritePtr sprite_i = gSpriteRoot;
+	int count = 0;
+	while(sprite_i != NULL){
+		if(sprite_i == gSpriteRoot){
+			printf("pos.h: %f \n", sprite_i->position.h);
+			printf("pos.v: %f \n", sprite_i->position.v);
+		}
+		SpritePtr sprite_j = gSpriteRoot;
+		//printf("pos.h: %f \n", sprite_i->position.h);
+		//printf("pos.v: %f \n", sprite_i->position.v);
+		if(sprite_j == sprite_i)
+			sprite_j = sprite_j->next;
+		while(sprite_j != NULL){
+			GLfloat dist =  sqrt(pow(sprite_i->position.h - sprite_j->position.h,2) +
+					    pow(sprite_i->position.v - sprite_j->position.v,2));
+			//printf("dist: %f \n", dist);
+			if(dist <= kMaxDistance){
+				//printf("near!! \n");
+				count++;
+				sprite_i->avg_pos.h += sprite_j->position.h;
+				sprite_i->avg_pos.v += sprite_j->position.v;
+			}
+			//printf("avg_pos.h: %f \n", avg_pos.h);
+			//printf("avg_pos.v: %f \n\n\n", avg_pos.v);
+			sprite_j = sprite_j->next;
+		}
+		if(count > 0){
+			sprite_i->avg_pos.h = sprite_i->avg_pos.h/(GLfloat) count;
+			sprite_i->avg_pos.v = sprite_i->avg_pos.v/(GLfloat) count;
+		}
+		count = 0;
+		sprite_i = sprite_i->next;
+	}
+	sprite_i = gSpriteRoot;
+	while(sprite_i != NULL){
+		sprite_i->speed.h += sprite_i->avg_pos.h * 0.001f;
+		sprite_i->speed.v += sprite_i->avg_pos.v * 0.001f;
+		sprite_i = sprite_i->next;
+	}
+
 }
 
 // Drawing routine
 void Display()
 {
 	SpritePtr sp;
-	
+
 	glClearColor(0, 0, 0.2, 1);
 	glClear(GL_COLOR_BUFFER_BIT+GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_TEXTURE_2D);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	
+
 	DrawBackground();
-	
+
 	SpriteBehavior(); // Din kod!
-	
+
 // Loop though all sprites. (Several loops in real engine.)
 	sp = gSpriteRoot;
 	do
@@ -51,7 +93,7 @@ void Display()
 		DrawSprite(sp);
 		sp = sp->next;
 	} while (sp != NULL);
-	
+
 	glutSwapBuffers();
 }
 
@@ -93,14 +135,14 @@ void Key(unsigned char key,
 void Init()
 {
 	TextureData *sheepFace, *blackFace, *dogFace, *foodFace;
-	
+
 	LoadTGATextureSimple("bilder/leaves.tga", &backgroundTexID); // Bakgrund
-	
-	sheepFace = GetFace("bilder/sheep.tga"); // Ett fŒr
-	blackFace = GetFace("bilder/blackie.tga"); // Ett svart fŒr
+
+	sheepFace = GetFace("bilder/sheep.tga"); // Ett fï¿½r
+	blackFace = GetFace("bilder/blackie.tga"); // Ett svart fï¿½r
 	dogFace = GetFace("bilder/dog.tga"); // En hund
 	foodFace = GetFace("bilder/mat.tga"); // Mat
-	
+
 	NewSprite(sheepFace, 100, 200, 1, 1);
 	NewSprite(sheepFace, 200, 100, 1.5, -1);
 	NewSprite(sheepFace, 250, 200, -1, 1.5);
@@ -113,15 +155,15 @@ int main(int argc, char **argv)
 	glutInitWindowSize(800, 600);
 	glutInitContextVersion(3, 2);
 	glutCreateWindow("SpriteLight demo / Flocking");
-	
+
 	glutDisplayFunc(Display);
 	glutTimerFunc(20, Timer, 0); // Should match the screen synch
 	glutReshapeFunc(Reshape);
 	glutKeyboardFunc(Key);
-	
+
 	InitSpriteLight();
 	Init();
-	
+
 	glutMainLoop();
 	return 0;
 }

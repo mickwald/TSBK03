@@ -26,6 +26,7 @@ typedef struct SpriteRec
 	FPoint speed;
 	GLfloat rotation;
 	struct SpriteRec *next;
+	FPoint avg_pos;
 	
 	// Add custom sprite data here as needed
 } SpriteRec, *SpritePtr;
