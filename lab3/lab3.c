@@ -188,17 +188,19 @@ void updateWorld()
         {
 			vec3 d = VectorSub(ball[j].X, ball[i].X);
 			float dLen = Norm(d);
-			if(abs(dLen) <= kBallSize*2.0f){
+			if(dLen <= kBallSize*2.0f){
 				ball[i].v = ScalarMult(ball[i].P, 1.0f/ball[i].mass);
 				ball[j].v = ScalarMult(ball[j].P, 1.0f/ball[j].mass);
 				vec3 vRel = VectorSub(ball[j].v, ball[i].v);
-				if(DotProduct(Normalize(d), vRel) < 0){
+				if(DotProduct(d, vRel) < 0){
 				
 				
-					vec3 rB = VectorSub(ScalarMult(d,0.5f),ball[j].X);
-					vec3 rA = VectorSub(ScalarMult(d,0.5f),ball[i].X);
+					//vec3 rB = VectorSub(ScalarMult(d,0.5f),ball[j].X);
+					//vec3 rA = VectorSub(ScalarMult(d,0.5f),ball[i].X);
+					//vec3 rB = VectorSub(ScalarMult(d,0.5f),ball[j].X);
+					vec3 rA = ScalarMult(d,0.5f);
 					float vRelFloatA = DotProduct(vRel, Normalize(rA));
-					float epsilon = .5f;
+					float epsilon = 1.f;
 					float impJA = -(epsilon +1.0f)*vRelFloatA/
 						((1.0f/ball[i].mass) + (1.0f/ball[j].mass));
 					ball[i].F = VectorAdd(ball[i].F, ScalarMult(ScalarMult(Normalize(rA),-impJA),1.0f/deltaT));
@@ -211,19 +213,20 @@ void updateWorld()
 	// friction against floor, simplified as well as more correct
 	for (i = 0; i < kNumBalls; i++)
 	{
+		ball[i].T = SetVector(0,0,0);
 		vec3 up = SetVector(0.0f,kBallSize,0.0f);
-		GLfloat my = .1f;
+		vec3 contactP = ScalarMult(up, -1.0f);
+		vec3 wxr = CrossProduct(ball[i].omega, contactP);
+		GLfloat my = .0f;
+		GLfloat g = 9.82f;
 		/*vec3 rotAxis = CrossProduct(up,ball[i].P);
 		float speed = Norm(ball[i].P);
 		ball[i].R = Mult(ArbRotate(rotAxis, speed*deltaT*2*M_PI), ball[i].R);
 		*/
-		vec3 vRelRot = VectorSub(ball[i].v, ScalarMult(ball[i].omega, kBallSize));
-		if(Norm(vRelRot) >= .1f){
-			ball[i].T = CrossProduct(ScalarMult(up, -1.f), ScalarMult(vRelRot,my*ball[i].mass));
-		}
-		
-		vec3 rotAxis = CrossProduct(up, ball[i].omega);
-		ball[i].R = Mult(ArbRotate(rotAxis, Norm(ball[i].omega)*deltaT), ball[i].R);
+		//printf("i = %d, vRelRot = %f %f %f\n", i, vRelRot.x, vRelRot.y, vRelRot.z);
+
+		ball[i].F = VectorAdd(ball[i].F, ScalarMult(VectorAdd(ball[i].v, wxr),-my));
+		ball[i].T = CrossProduct(contactP, ScalarMult(VectorAdd(ball[i].v, wxr),-my));
 	}
 
 // Update state, follows the book closely
@@ -235,15 +238,15 @@ void updateWorld()
 
 		// Note: omega is not set. How do you calculate it?
 		// YOUR CODE HERE
-		I.m[0] = ball[i].mass*(4.0f/3.0f);	//xx
+		I.m[0] = ball[i].mass*pow(kBallSize,2)*(1.0f/3.0f);	//xx
 		I.m[1] = 0;	//xy
 		I.m[2] = 0;	//xz
 		I.m[3] = 0;	//yx
-		I.m[4] = ball[i].mass*(4.0f/3.0f);	//yy
+		I.m[4] = ball[i].mass*pow(kBallSize,2)*(1.0f/3.0f);	//yy
 		I.m[5] = 0;	//yz
 		I.m[6] = 0;	//zx
 		I.m[7] = 0;	//zy
-		I.m[8] = ball[i].mass*(4.0f/3.0f);	//zz
+		I.m[8] = ball[i].mass*pow(kBallSize,2)*(1.0f/3.0f);	//zz
 
 		invI = InvertMat3(I);
 		ball[i].omega = MultMat3Vec3(invI, ball[i].L);
@@ -361,7 +364,8 @@ void init()
 	ball[2].P = SetVector(0, 0, 0);
 	ball[3].P = SetVector(0, 0, 1.00);
 
-	//ball[0].mass = 100.0;
+	ball[0].mass = 100.0;
+	//ball[0].P = SetVector(0, 0, -5.00);
 
     cam = SetVector(0, 2, 2);
     point = SetVector(0, 0, 0);
