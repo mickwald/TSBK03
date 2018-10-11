@@ -11,7 +11,7 @@
 	#include <GL/gl.h>
 	#include "MicroGlut.h"
 #endif
-
+#include <time.h>
 #include <math.h>
 #include <stdlib.h>
 #include "LoadTGA.h"
@@ -21,8 +21,8 @@
 // L�gg till egna globaler h�r efter behov.
 
 float kMaxDistance = 100.0f;
-float cohesionFactor = 0.07f;
-float separationFactor = 0.006f;
+float cohesionFactor = 0.02f;
+float separationFactor = 0.16f;
 float alignmentFactor = 0.1f;
 
 void SpriteBehavior() // Din kod!
@@ -37,6 +37,8 @@ void SpriteBehavior() // Din kod!
 		count = 0;
 		sprite_i->avg_pos.h = 0.0f;
 		sprite_i->avg_pos.v = 0.0f;
+		sprite_i->avoid_vec.h = 0.0f;
+		sprite_i->avoid_vec.v = 0.0f;
 		/*if(sprite_i == gSpriteRoot){
 			printf("pos.h: %f \n", sprite_i->position.h);
 			printf("pos.v: %f \n", sprite_i->position.v);
@@ -60,8 +62,8 @@ void SpriteBehavior() // Din kod!
 					count++;
 					sprite_i->avg_pos.h += sprite_j->position.h;
 					sprite_i->avg_pos.v += sprite_j->position.v;
-					sprite_i->avoid_vec.h += sprite_i->position.h - sprite_j->position.h;
-					sprite_i->avoid_vec.v += sprite_i->position.v - sprite_j->position.v;
+					sprite_i->avoid_vec.h += (sprite_i->position.h - sprite_j->position.h)* (1.f - dist / kMaxDistance);
+					sprite_i->avoid_vec.v += (sprite_i->position.v - sprite_j->position.v) * (1.f - dist / kMaxDistance);
 					sprite_i->speed_diff.h += sprite_j->speed.h - sprite_i->speed.h;
 					sprite_i->speed_diff.v += sprite_j->speed.v - sprite_i->speed.v;
 				}
@@ -86,25 +88,21 @@ void SpriteBehavior() // Din kod!
 	}
 	sprite_i = gSpriteRoot;
 	while(sprite_i != NULL){
-		GLfloat dist =  sqrt(pow(sprite_i->avg_pos.h - sprite_i->position.h,2) +
-				     pow(sprite_i->avg_pos.v - sprite_i->position.v,2));
-		//printf("dist: %f \n\n", dist);
 		if(sprite_i->avg_pos.h > 0.0f && sprite_i->avg_pos.v > 0.0f){
 			FPoint cohesion;
 			FPoint separation;
 			FPoint alignment;
-			cohesion.h = (sprite_i->avg_pos.h - sprite_i->position.h) * (dist / kMaxDistance) * cohesionFactor;
-			cohesion.v = (sprite_i->avg_pos.v - sprite_i->position.v) * (dist / kMaxDistance) * cohesionFactor;
-			separation.h = (sprite_i->avoid_vec.h * (1.f - dist / kMaxDistance)) * separationFactor;
-			separation.v = (sprite_i->avoid_vec.v * (1.f - dist / kMaxDistance)) * separationFactor;
+			cohesion.h = (sprite_i->avg_pos.h - sprite_i->position.h) * cohesionFactor;
+			cohesion.v = (sprite_i->avg_pos.v - sprite_i->position.v) * cohesionFactor;
+			separation.h = (sprite_i->avoid_vec.h  * separationFactor);
+			separation.v = (sprite_i->avoid_vec.v * separationFactor);
 			alignment.h = sprite_i->speed_diff.h * alignmentFactor;
 			alignment.v = sprite_i->speed_diff.v * alignmentFactor;
 			sprite_i->speed.h += cohesion.h + separation.h + alignment.h;
 			sprite_i->speed.v += cohesion.v + separation.v + alignment.v;
 			float speedVal = sqrt(pow(sprite_i->speed.h,2) + pow(sprite_i->speed.v,2));
-			sprite_i->speed.h = 5.0f*sprite_i->speed.h/speedVal;
-			sprite_i->speed.v = 5.0f*sprite_i->speed.v/speedVal;
-			//printf("Speed: %f, %f\n", sprite_i->speed.h, sprite_i->speed.v);
+			sprite_i->speed.h = 5.0f*sprite_i->speed.h/speedVal + ((((float)(rand() % 1000000)) - 500000.f)/1000000.f);
+			sprite_i->speed.v = 5.0f*sprite_i->speed.v/speedVal + ((((float)(rand() % 1000000)) - 500000.f)/1000000.f);
 		}
 		sprite_i = sprite_i->next;
 	}
@@ -201,6 +199,8 @@ void Init()
 {
 	TextureData *sheepFace, *blackFace, *dogFace, *foodFace;
 
+	srand(time(NULL));
+
 	LoadTGATextureSimple("bilder/leaves.tga", &backgroundTexID); // Bakgrund
 
 	sheepFace = GetFace("bilder/sheep.tga"); // Ett f�r
@@ -214,6 +214,7 @@ void Init()
 	NewSprite(sheepFace, 500, 600, 1, 1);
 	NewSprite(sheepFace, 400, 700, -1, -1);
 	NewSprite(sheepFace, 450, 600, 1, 1);
+	NewSprite(blackFace, 300, 400, 1, 1.5);
 }
 
 int main(int argc, char **argv)
