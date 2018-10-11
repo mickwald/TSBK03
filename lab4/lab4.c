@@ -112,6 +112,16 @@ void SpriteBehavior() // Din kod!
 			float speedVal = sqrt(pow(sprite_i->speed.h,2) + pow(sprite_i->speed.v,2));
 			sprite_i->speed.h = 5.0f*sprite_i->speed.h/speedVal + ((((float)(rand() % 1000000)) - 500000.f)/1000000.f);
 			sprite_i->speed.v = 5.0f*sprite_i->speed.v/speedVal + ((((float)(rand() % 1000000)) - 500000.f)/1000000.f);
+			if(sprite_i->face->texID == 3){
+				float chanceh = (((float)(rand() % 1000000))/1000000.f);
+				float chancev = (((float)(rand() % 1000000))/1000000.f);
+				if(chanceh < .01f){
+					sprite_i->speed.h = -sprite_i->speed.h;
+				}
+				if(chancev < .01f){
+					sprite_i->speed.v = -sprite_i->speed.v;
+				}
+			}
 		}
 		} else {
 			//sprite_i->speed.h += ((((float)(rand() % 1000000)) - 500000.f)/1000000.f);
