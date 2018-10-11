@@ -20,7 +20,10 @@
 
 // L�gg till egna globaler h�r efter behov.
 
-#define kMaxDistance 200.0f
+float kMaxDistance = 100.0f;
+float cohesionFactor = 0.07f;
+float separationFactor = 0.006f;
+float alignmentFactor = 1.0f;
 
 void SpriteBehavior() // Din kod!
 {
@@ -57,8 +60,8 @@ void SpriteBehavior() // Din kod!
 					count++;
 					sprite_i->avg_pos.h += sprite_j->position.h;
 					sprite_i->avg_pos.v += sprite_j->position.v;
-					sprite_i->avoid_vec.h += sprite_j->position.h - sprite_i->position.h;
-					sprite_i->avoid_vec.v += sprite_j->position.v - sprite_i->position.v;
+					sprite_i->avoid_vec.h += sprite_i->position.h - sprite_j->position.h;
+					sprite_i->avoid_vec.v += sprite_i->position.v - sprite_j->position.v;
 				}
 				
 			
@@ -66,13 +69,13 @@ void SpriteBehavior() // Din kod!
 		sprite_j = sprite_j->next;
 		}
 		if(count > 0){
-			printf("Count: %d\n", count);
+			//printf("Count: %d\n", count);
 			sprite_i->avg_pos.h = sprite_i->avg_pos.h/(GLfloat) count;
 			sprite_i->avg_pos.v = sprite_i->avg_pos.v/(GLfloat) count;
 			sprite_i->avoid_vec.h = sprite_i->avoid_vec.h/(GLfloat) count;
 			sprite_i->avoid_vec.v = sprite_i->avoid_vec.v/(GLfloat) count;
-			printf("avg_pos.h: %f \n", sprite_i->avg_pos.h);
-			printf("avg_pos.v: %f \n\n", sprite_i->avg_pos.v);
+			//printf("avg_pos.h: %f \n", sprite_i->avg_pos.h);
+			//printf("avg_pos.v: %f \n\n", sprite_i->avg_pos.v);
 		}
 		count = 0;
 		sprite_i = sprite_i->next;
@@ -81,16 +84,20 @@ void SpriteBehavior() // Din kod!
 	while(sprite_i != NULL){
 		GLfloat dist =  sqrt(pow(sprite_i->avg_pos.h - sprite_i->position.h,2) +
 				     pow(sprite_i->avg_pos.v - sprite_i->position.v,2));
-		printf("dist: %f \n\n", dist);
+		//printf("dist: %f \n\n", dist);
 		if(sprite_i->avg_pos.h > 0.0f && sprite_i->avg_pos.v > 0.0f){
 			FPoint cohesion;
 			FPoint separation;
-			cohesion.h = (sprite_i->avg_pos.h - sprite_i->position.h) * (dist / kMaxDistance) * 0.005f;
-			cohesion.v = (sprite_i->avg_pos.v - sprite_i->position.v) * (dist / kMaxDistance) * 0.005f;
-			separation.h = (sprite_i->avoid_vec.h / dist) * 0.001f;
-			separation.v = (sprite_i->avoid_vec.v / dist) * 0.001f;
+			cohesion.h = (sprite_i->avg_pos.h - sprite_i->position.h) * (dist / kMaxDistance) * cohesionFactor;
+			cohesion.v = (sprite_i->avg_pos.v - sprite_i->position.v) * (dist / kMaxDistance) * cohesionFactor;
+			separation.h = (sprite_i->avoid_vec.h * (1.f - dist / kMaxDistance)) * separationFactor;
+			separation.v = (sprite_i->avoid_vec.v * (1.f - dist / kMaxDistance)) * separationFactor;
 			sprite_i->speed.h += cohesion.h + separation.h;
 			sprite_i->speed.v += cohesion.v + separation.v;
+			float speedVal = sqrt(pow(sprite_i->speed.h,2) + pow(sprite_i->speed.v,2));
+			sprite_i->speed.h = 5.0f*sprite_i->speed.h/speedVal;
+			sprite_i->speed.v = 5.0f*sprite_i->speed.v/speedVal;
+			//printf("Speed: %f, %f\n", sprite_i->speed.h, sprite_i->speed.v);
 		}
 		sprite_i = sprite_i->next;
 	}
@@ -146,13 +153,37 @@ void Key(unsigned char key,
 {
   switch (key)
   {
-    case '+':
-    	someValue += 0.1;
-    	printf("someValue = %f\n", someValue);
+    case 'q':
+    	cohesionFactor += 0.01;
+    	printf("cohesionFactor = %f\n", cohesionFactor);
     	break;
-    case '-':
-    	someValue -= 0.1;
-    	printf("someValue = %f\n", someValue);
+    case 'a':
+    	cohesionFactor -= 0.01;
+    	printf("cohesionFactore = %f\n", cohesionFactor);
+    	break;
+    case 'w':
+    	separationFactor += 0.001;
+    	printf("separationFactor = %f\n", separationFactor);
+    	break;
+    case 's':
+    	separationFactor -= 0.001;
+    	printf("separationFactor = %f\n", separationFactor);
+    	break;
+    case 'e':
+    	alignmentFactor += 0.1;
+    	printf("alignmentFactor = %f\n", alignmentFactor);
+    	break;
+    case 'd':
+    	alignmentFactor -= 0.1;
+    	printf("alignmentFactor = %f\n", alignmentFactor);
+    	break;
+    case 'r':
+    	kMaxDistance += 10.0f;
+    	printf("kMaxDistance = %f\n", kMaxDistance);
+    	break;
+    case 'f':
+    	kMaxDistance -= 10.0f;
+    	printf("kMaxDistance = %f\n", kMaxDistance);
     	break;
     case 0x1b:
       exit(0);
