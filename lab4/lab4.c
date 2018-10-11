@@ -20,7 +20,7 @@
 
 // L�gg till egna globaler h�r efter behov.
 
-#define kMaxDistance 50.0f
+#define kMaxDistance 200.0f
 
 void SpriteBehavior() // Din kod!
 {
@@ -31,40 +31,57 @@ void SpriteBehavior() // Din kod!
 	SpritePtr sprite_i = gSpriteRoot;
 	int count = 0;
 	while(sprite_i != NULL){
-		if(sprite_i == gSpriteRoot){
+		count = 0;
+		sprite_i->avg_pos.h = 0.0f;
+		sprite_i->avg_pos.v = 0.0f;
+		/*if(sprite_i == gSpriteRoot){
 			printf("pos.h: %f \n", sprite_i->position.h);
 			printf("pos.v: %f \n", sprite_i->position.v);
-		}
+		}*/
 		SpritePtr sprite_j = gSpriteRoot;
 		//printf("pos.h: %f \n", sprite_i->position.h);
 		//printf("pos.v: %f \n", sprite_i->position.v);
-		if(sprite_j == sprite_i)
+		/*if(sprite_j == sprite_i){
 			sprite_j = sprite_j->next;
+			printf("skipping sprite\n");
+		}*/
 		while(sprite_j != NULL){
-			GLfloat dist =  sqrt(pow(sprite_i->position.h - sprite_j->position.h,2) +
-					    pow(sprite_i->position.v - sprite_j->position.v,2));
-			//printf("dist: %f \n", dist);
-			if(dist <= kMaxDistance){
-				//printf("near!! \n");
-				count++;
-				sprite_i->avg_pos.h += sprite_j->position.h;
-				sprite_i->avg_pos.v += sprite_j->position.v;
+			if(sprite_j != sprite_i){
+				GLfloat dist =  sqrt(pow(sprite_i->position.h - 
+							 sprite_j->position.h,2) +
+					    	     pow(sprite_i->position.v - 
+							 sprite_j->position.v,2));
+				//printf("dist: %f \n", dist);
+				if(dist <= kMaxDistance){
+					//printf("near!! \n");
+					count++;
+					sprite_i->avg_pos.h += sprite_j->position.h;
+					sprite_i->avg_pos.v += sprite_j->position.v;
+				}
+				
+			
 			}
-			//printf("avg_pos.h: %f \n", avg_pos.h);
-			//printf("avg_pos.v: %f \n\n\n", avg_pos.v);
-			sprite_j = sprite_j->next;
+		sprite_j = sprite_j->next;
 		}
 		if(count > 0){
+			printf("Count: %d\n", count);
 			sprite_i->avg_pos.h = sprite_i->avg_pos.h/(GLfloat) count;
 			sprite_i->avg_pos.v = sprite_i->avg_pos.v/(GLfloat) count;
+			printf("avg_pos.h: %f \n", sprite_i->avg_pos.h);
+			printf("avg_pos.v: %f \n\n", sprite_i->avg_pos.v);
 		}
 		count = 0;
 		sprite_i = sprite_i->next;
 	}
 	sprite_i = gSpriteRoot;
 	while(sprite_i != NULL){
-		sprite_i->speed.h += sprite_i->avg_pos.h * 0.001f;
-		sprite_i->speed.v += sprite_i->avg_pos.v * 0.001f;
+		GLfloat dist =  sqrt(pow(sprite_i->avg_pos.h - sprite_i->position.h,2) +
+				     pow(sprite_i->avg_pos.v - sprite_i->position.v,2));
+		printf("dist: %f \n\n", dist);
+		if(sprite_i->avg_pos.h > 0.0f && sprite_i->avg_pos.v > 0.0f){
+			sprite_i->speed.h += (sprite_i->avg_pos.h - sprite_i->position.h) * (dist / kMaxDistance) * 0.005f;
+			sprite_i->speed.v += (sprite_i->avg_pos.v - sprite_i->position.v) * (dist / kMaxDistance) * 0.005f;
+		}
 		sprite_i = sprite_i->next;
 	}
 
@@ -146,6 +163,9 @@ void Init()
 	NewSprite(sheepFace, 100, 200, 1, 1);
 	NewSprite(sheepFace, 200, 100, 1.5, -1);
 	NewSprite(sheepFace, 250, 200, -1, 1.5);
+	NewSprite(sheepFace, 500, 600, 1, 1);
+	NewSprite(sheepFace, 400, 700, -1, -1);
+	NewSprite(sheepFace, 450, 600, 1, 1);
 }
 
 int main(int argc, char **argv)
