@@ -57,6 +57,8 @@ void SpriteBehavior() // Din kod!
 					count++;
 					sprite_i->avg_pos.h += sprite_j->position.h;
 					sprite_i->avg_pos.v += sprite_j->position.v;
+					sprite_i->avoid_vec.h += sprite_j->position.h - sprite_i->position.h;
+					sprite_i->avoid_vec.v += sprite_j->position.v - sprite_i->position.v;
 				}
 				
 			
@@ -67,6 +69,8 @@ void SpriteBehavior() // Din kod!
 			printf("Count: %d\n", count);
 			sprite_i->avg_pos.h = sprite_i->avg_pos.h/(GLfloat) count;
 			sprite_i->avg_pos.v = sprite_i->avg_pos.v/(GLfloat) count;
+			sprite_i->avoid_vec.h = sprite_i->avoid_vec.h/(GLfloat) count;
+			sprite_i->avoid_vec.v = sprite_i->avoid_vec.v/(GLfloat) count;
 			printf("avg_pos.h: %f \n", sprite_i->avg_pos.h);
 			printf("avg_pos.v: %f \n\n", sprite_i->avg_pos.v);
 		}
@@ -79,8 +83,14 @@ void SpriteBehavior() // Din kod!
 				     pow(sprite_i->avg_pos.v - sprite_i->position.v,2));
 		printf("dist: %f \n\n", dist);
 		if(sprite_i->avg_pos.h > 0.0f && sprite_i->avg_pos.v > 0.0f){
-			sprite_i->speed.h += (sprite_i->avg_pos.h - sprite_i->position.h) * (dist / kMaxDistance) * 0.005f;
-			sprite_i->speed.v += (sprite_i->avg_pos.v - sprite_i->position.v) * (dist / kMaxDistance) * 0.005f;
+			FPoint cohesion;
+			FPoint separation;
+			cohesion.h = (sprite_i->avg_pos.h - sprite_i->position.h) * (dist / kMaxDistance) * 0.005f;
+			cohesion.v = (sprite_i->avg_pos.v - sprite_i->position.v) * (dist / kMaxDistance) * 0.005f;
+			separation.h = (sprite_i->avoid_vec.h / dist) * 0.001f;
+			separation.v = (sprite_i->avoid_vec.v / dist) * 0.001f;
+			sprite_i->speed.h += cohesion.h + separation.h;
+			sprite_i->speed.v += cohesion.v + separation.v;
 		}
 		sprite_i = sprite_i->next;
 	}

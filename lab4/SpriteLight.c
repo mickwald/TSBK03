@@ -59,6 +59,8 @@ struct SpriteRec *NewSprite(TextureData *f, GLfloat h, GLfloat v, GLfloat hs, GL
 	sp->rotation = 0;
 	sp->avg_pos.h = 0;
 	sp->avg_pos.v = 0;
+	sp->avoid_vec.h = 0;
+	sp->avoid_vec.v = 0;
 	return sp;
 }
 
