@@ -28,6 +28,7 @@ typedef struct SpriteRec
 	struct SpriteRec *next;
 	FPoint avg_pos;
 	FPoint avoid_vec;
+	FPoint speed_diff;
 	
 	// Add custom sprite data here as needed
 } SpriteRec, *SpritePtr;

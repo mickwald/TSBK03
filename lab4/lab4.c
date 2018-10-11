@@ -23,7 +23,7 @@
 float kMaxDistance = 100.0f;
 float cohesionFactor = 0.07f;
 float separationFactor = 0.006f;
-float alignmentFactor = 1.0f;
+float alignmentFactor = 0.1f;
 
 void SpriteBehavior() // Din kod!
 {
@@ -62,6 +62,8 @@ void SpriteBehavior() // Din kod!
 					sprite_i->avg_pos.v += sprite_j->position.v;
 					sprite_i->avoid_vec.h += sprite_i->position.h - sprite_j->position.h;
 					sprite_i->avoid_vec.v += sprite_i->position.v - sprite_j->position.v;
+					sprite_i->speed_diff.h += sprite_j->speed.h - sprite_i->speed.h;
+					sprite_i->speed_diff.v += sprite_j->speed.v - sprite_i->speed.v;
 				}
 				
 			
@@ -74,6 +76,8 @@ void SpriteBehavior() // Din kod!
 			sprite_i->avg_pos.v = sprite_i->avg_pos.v/(GLfloat) count;
 			sprite_i->avoid_vec.h = sprite_i->avoid_vec.h/(GLfloat) count;
 			sprite_i->avoid_vec.v = sprite_i->avoid_vec.v/(GLfloat) count;
+			sprite_i->speed_diff.h = sprite_i->speed_diff.h/(GLfloat) count;
+			sprite_i->speed_diff.v = sprite_i->speed_diff.v/(GLfloat) count;
 			//printf("avg_pos.h: %f \n", sprite_i->avg_pos.h);
 			//printf("avg_pos.v: %f \n\n", sprite_i->avg_pos.v);
 		}
@@ -88,12 +92,15 @@ void SpriteBehavior() // Din kod!
 		if(sprite_i->avg_pos.h > 0.0f && sprite_i->avg_pos.v > 0.0f){
 			FPoint cohesion;
 			FPoint separation;
+			FPoint alignment;
 			cohesion.h = (sprite_i->avg_pos.h - sprite_i->position.h) * (dist / kMaxDistance) * cohesionFactor;
 			cohesion.v = (sprite_i->avg_pos.v - sprite_i->position.v) * (dist / kMaxDistance) * cohesionFactor;
 			separation.h = (sprite_i->avoid_vec.h * (1.f - dist / kMaxDistance)) * separationFactor;
 			separation.v = (sprite_i->avoid_vec.v * (1.f - dist / kMaxDistance)) * separationFactor;
-			sprite_i->speed.h += cohesion.h + separation.h;
-			sprite_i->speed.v += cohesion.v + separation.v;
+			alignment.h = sprite_i->speed_diff.h * alignmentFactor;
+			alignment.v = sprite_i->speed_diff.v * alignmentFactor;
+			sprite_i->speed.h += cohesion.h + separation.h + alignment.h;
+			sprite_i->speed.v += cohesion.v + separation.v + alignment.v;
 			float speedVal = sqrt(pow(sprite_i->speed.h,2) + pow(sprite_i->speed.v,2));
 			sprite_i->speed.h = 5.0f*sprite_i->speed.h/speedVal;
 			sprite_i->speed.v = 5.0f*sprite_i->speed.v/speedVal;
