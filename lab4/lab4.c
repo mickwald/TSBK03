@@ -24,6 +24,7 @@ float kMaxDistance = 100.0f;
 float cohesionFactor = 0.02f;
 float separationFactor = 0.16f;
 float alignmentFactor = 0.1f;
+float blacksheepFactor = -3.f;
 
 void SpriteBehavior() // Din kod!
 {
@@ -34,6 +35,7 @@ void SpriteBehavior() // Din kod!
 	SpritePtr sprite_i = gSpriteRoot;
 	int count = 0;
 	while(sprite_i != NULL){
+		if(sprite_i->face->texID != 4){ //not black sheep
 		count = 0;
 		sprite_i->avg_pos.h = 0.0f;
 		sprite_i->avg_pos.v = 0.0f;
@@ -62,8 +64,13 @@ void SpriteBehavior() // Din kod!
 					count++;
 					sprite_i->avg_pos.h += sprite_j->position.h;
 					sprite_i->avg_pos.v += sprite_j->position.v;
-					sprite_i->avoid_vec.h += (sprite_i->position.h - sprite_j->position.h)* (1.f - dist / kMaxDistance);
-					sprite_i->avoid_vec.v += (sprite_i->position.v - sprite_j->position.v) * (1.f - dist / kMaxDistance);
+					if(sprite_j->face->texID == 4){
+						blacksheepFactor = 5.f;
+					} else {
+						blacksheepFactor = 1.f;
+					}
+					sprite_i->avoid_vec.h += blacksheepFactor*(sprite_i->position.h - sprite_j->position.h)* (1.f - dist / kMaxDistance);
+					sprite_i->avoid_vec.v += blacksheepFactor*(sprite_i->position.v - sprite_j->position.v) * (1.f - dist / kMaxDistance);
 					sprite_i->speed_diff.h += sprite_j->speed.h - sprite_i->speed.h;
 					sprite_i->speed_diff.v += sprite_j->speed.v - sprite_i->speed.v;
 				}
@@ -84,10 +91,12 @@ void SpriteBehavior() // Din kod!
 			//printf("avg_pos.v: %f \n\n", sprite_i->avg_pos.v);
 		}
 		count = 0;
+		}
 		sprite_i = sprite_i->next;
 	}
 	sprite_i = gSpriteRoot;
 	while(sprite_i != NULL){
+		if(sprite_i->face->texID != 4){
 		if(sprite_i->avg_pos.h > 0.0f && sprite_i->avg_pos.v > 0.0f){
 			FPoint cohesion;
 			FPoint separation;
@@ -103,6 +112,13 @@ void SpriteBehavior() // Din kod!
 			float speedVal = sqrt(pow(sprite_i->speed.h,2) + pow(sprite_i->speed.v,2));
 			sprite_i->speed.h = 5.0f*sprite_i->speed.h/speedVal + ((((float)(rand() % 1000000)) - 500000.f)/1000000.f);
 			sprite_i->speed.v = 5.0f*sprite_i->speed.v/speedVal + ((((float)(rand() % 1000000)) - 500000.f)/1000000.f);
+		}
+		} else {
+			//sprite_i->speed.h += ((((float)(rand() % 1000000)) - 500000.f)/1000000.f);
+			//sprite_i->speed.v += ((((float)(rand() % 1000000)) - 500000.f)/1000000.f);
+			float speedVal = sqrt(pow(sprite_i->speed.h,2) + pow(sprite_i->speed.v,2));
+			sprite_i->speed.h = 5.0f*sprite_i->speed.h/speedVal;
+			sprite_i->speed.v = 5.0f*sprite_i->speed.v/speedVal;
 		}
 		sprite_i = sprite_i->next;
 	}
@@ -156,6 +172,10 @@ void Key(unsigned char key,
          __attribute__((unused)) int x,
          __attribute__((unused)) int y)
 {
+	SpritePtr dog = gSpriteRoot;
+  while(dog->face->texID != 4){
+	dog = dog->next;
+	}
   switch (key)
   {
     case 'q':
@@ -190,6 +210,22 @@ void Key(unsigned char key,
     	kMaxDistance -= 10.0f;
     	printf("kMaxDistance = %f\n", kMaxDistance);
     	break;
+    case GLUT_KEY_UP:
+    	dog->speed.v += 1.f;
+    	printf("dog->speed.v = %f\n", dog->speed.v);
+    	break;
+    case GLUT_KEY_DOWN:
+    	dog->speed.v -= 1.f;
+    	printf("dog->speed.v = %f\n", dog->speed.v);
+    	break;
+    case GLUT_KEY_LEFT:
+    	dog->speed.h -= 1.f;
+    	printf("dog->speed.h = %f\n", dog->speed.h);
+    	break;
+    case GLUT_KEY_RIGHT:
+    	dog->speed.h += 1.f;
+    	printf("dog->speed.h = %f\n", dog->speed.h);
+    	break;
     case 0x1b:
       exit(0);
   }
@@ -214,7 +250,9 @@ void Init()
 	NewSprite(sheepFace, 500, 600, 1, 1);
 	NewSprite(sheepFace, 400, 700, -1, -1);
 	NewSprite(sheepFace, 450, 600, 1, 1);
-	NewSprite(blackFace, 300, 400, 1, 1.5);
+	NewSprite(blackFace, 450, 600, -1, 1);
+	NewSprite(blackFace, 450, 600, 1, -1);
+	NewSprite(dogFace, 300, 400, 1, 1.5);
 }
 
 int main(int argc, char **argv)
